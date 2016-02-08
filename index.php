@@ -109,7 +109,6 @@ else{
 				if(!is_null($string_auxiliar))
 					$string_auxiliar .= ") ";
 				
-				//debug("<p>".$string_auxiliar."</p>");
 				//busca as top 5 chaves na tabela do zabbix usando like '%%'
 				//Aqui usamos tablespace apenas como nome de exemplo, mas na verdade pode ser qualquer
 				//objeto que venha ser populado dinamicamente pelo zabbix auto-discovery
@@ -143,12 +142,68 @@ else{
 				
 				$rows = Select($query_top5_keys);
 				
-				(count($rows)>1) ? debug("<li><h4>Chaves de retorno(".count($rows)."): <i>~buscara medias do objeto, plotando um data source [POR] objeto</i></h4></li>") : debug("<li><h4>Chave de retorno: </b><i>~buscara detalhamento do objeto, plotando tres data sources [PRO] objeto</i></h4></li>");
-				debug("<ol type=\"1\">");
-				foreach ($rows as $oneOfTop5keys){
-					debug("<li><h4>Chave de retorno (" . $oneOfTop5keys["Chave"] . ")</h4></li>");							
+				$grafico_multiplo = null;
+				if(count($rows)>1){
+					$grafico_multiplo = true;
+					debug("<li><h4>Chaves de retorno(".count($rows)."): <i>~buscara medias do objeto, plotando um data source [POR] objeto</i></h4></li>");
+				}else{
+					$grafico_multiplo = false;	
+					debug("<li><h4>Chave de retorno: </b><i>~buscara detalhamento do objeto, plotando três data sources [PRO] objeto</i></h4></li>");
 				}
-				debug("</ol>");		
+				
+				debug("<ol type=\"1\">");
+				
+				/** BUSCA OS VALORES PARA CADA CHAVE
+				**/
+				foreach ($rows as $oneOfTop5keys){
+					debug("<li><h4>Chave de retorno (" . $oneOfTop5keys["Chave"] . ")</h4></li>");	
+						debug("<ol type=\"1\">");						
+						
+						$query_valores_por_chave =
+						"select round(min(value_min),2) as minima,
+								round(max(value_max),2) as maxima,
+								round(sum(value_max)/count(*),2) as media,
+								date_format(FROM_UNIXTIME(clock),'%Y-%m') as data,
+								b.key_ as key_
+						from zabbix.trends a,zabbix.items b, zabbix.hosts c
+						where
+						a.itemid = b.itemid
+						and b.hostid = c.hostid
+						and b.hostid = ". $codhost ."
+						and b.key_ = '" . $oneOfTop5keys["Chave"] . "' 
+						and clock >=  UNIX_TIMESTAMP(DATE_FORMAT(date_add(date_add(CURRENT_DATE,interval -DAY(CURRENT_DATE)+1 DAY),interval -3 MONTH), '%Y%m%d%H%i%s')) 
+						and clock <=  UNIX_TIMESTAMP(DATE_FORMAT(date_add(date_add(CURRENT_DATE,interval -DAY(CURRENT_DATE)+1 DAY), interval -1 second), '%Y%m%d%H%i%s')) 
+						group by b.key_,date_format(FROM_UNIXTIME(clock),'%Y-%m')
+						union 
+						select 	round(min(value_min),2) as minima,
+								round(max(value_max),2) as maxima,
+								round(sum(value_max)/count(*),2) as media,
+								date_format(FROM_UNIXTIME(clock),'%Y-%m') as data,
+								b.key_ as key_
+						from zabbix.trends_uint a,zabbix.items b, zabbix.hosts c
+						where
+						a.itemid = b.itemid
+						and b.hostid = c.hostid
+						and b.hostid = ". $codhost ." 
+						and b.key_ = '" . $oneOfTop5keys["Chave"] . "' 
+						and clock >=  UNIX_TIMESTAMP(DATE_FORMAT(date_add(date_add(CURRENT_DATE,interval -DAY(CURRENT_DATE)+1 DAY),interval -3 MONTH), '%Y%m%d%H%i%s')) 
+						and clock <=  UNIX_TIMESTAMP(DATE_FORMAT(date_add(date_add(CURRENT_DATE,interval -DAY(CURRENT_DATE)+1 DAY), interval -1 second), '%Y%m%d%H%i%s')) 
+						group by b.key_,date_format(FROM_UNIXTIME(clock),'%Y-%m') order by key_,data";
+						
+						$rows = Select($query_valores_por_chave);
+						foreach ($rows as $valor){
+							if($grafico_multiplo){
+								debug("<li><h4>Data (" . $valor["data"] . ")&ensp;//&ensp;Media (" . $valor["maxima"] . ")</h4></li>");
+							}								
+							else{
+								debug("<li><h4>Data (" . $valor["data"] . ")&ensp;//&ensp;Minima (" . $valor["minima"] . ")&ensp;
+							//&ensp;Media (" . $valor["media"] . "&ensp;//&ensp;Maxima (" . $valor["maxima"] . ")</h4></li>");	
+							}				
+						}						
+					debug("</ol>");
+				}
+				debug("</ol>");	
+				debug("<li><h4>Query top 5 objetos ( " . $query_top5_keys . " )</h4></li>");
 				debug("</ol>");
 			}
 			debug("</ol>");
@@ -175,19 +230,22 @@ function debug($text){
 * 
 *  Exemplo: ARRAY["NOME_COLUNA"]
 */
-function Select($q){
+function Select($query){
 	$ip = $_GET["ip"];
 	$user = $_GET["user"];
 	$password = $_GET["password"];
 	$schema = $_GET["schema"];
 	
-	$l = mysqli_connect("$ip","$user","$password","$schema");
+	$conexao =  mysqli_connect("$ip","$user","$password","$schema");
 	if (mysqli_connect_errno()) {
 		printf("Connect failed: %s\n", mysqli_connect_error());
 		exit();
 	}else{
-		$c = mysqli_query($l, $q);
-		return mysqli_fetch_array($c,MYSQLI_ASSOC);
+		$cursor = mysqli_query($conexao, $query);
+		$resultado = mysqli_fetch_all($cursor, MYSQLI_ASSOC);
+		return $resultado;	
 	}
 }
+
 ?>
+	
