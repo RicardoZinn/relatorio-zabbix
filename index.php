@@ -25,8 +25,14 @@ else{
 		$row = Select($graficos);
 		echo "total graficos:$row";
 }
+
 function Select($q){
-	$l = mysqli_connect("ip","user","pass","schema");
+	$ip = $_GET["ip"];
+	$user = $_GET["user"];
+	$password = $_GET["password"];
+	$schema = $_GET["schema"];
+	
+	$l = mysqli_connect("$ip","$user","$password","$schema");
 	if (mysqli_connect_errno()) {
 		printf("Connect failed: %s\n", mysqli_connect_error());
 		exit();
