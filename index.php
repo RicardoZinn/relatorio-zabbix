@@ -13,19 +13,42 @@ if(is_null($codhost)){
 	exit();
 }
 else{
-	$graficos = "select 
-						* 
-					from 
-						v_relatorio 
-					where 
-						IdHost = $codhost 
-					order by OrdemCategoria, IdGrafico";
+	//define quando altera a categoria, criando um header ou grand-header (a definir)
+	$query_categorias = 	"select distinct IdCategoria
+							from v_relatorio
+							where IdHost = " . $codhost . "
+							order by OrdemCategoria";
+				
+		$rows = Select($query_categorias);	
+	foreach ($rows as $categoria){
+		//cria um header para cada categoria
+		$query_subcategorias = "select distinct IdSubCategoria
+								from v_relatorio
+								where 	IdHost = " . $codhost . "
+								and		IdCategoria = " . $categoria["IdCategoria"] . "
+								order by OrdemSubCategoria";
+								
+		echo "Categoria :" . $categoria["IdCategoria"] . "</br>";
 		
-		//Execute
-		$row = Select($graficos);
-		echo "total graficos:$row";
+		$rows = Select($query_subcategorias);
+		
+		/*	para cada categoria pode ter várias outras subcategorias..
+			Banco de dados (categoria), Instancia A (subcategoria), Instancia B (subcategoria)...
+		*/
+		foreach ($rows as $subcategoria){
+			echo ".      subcategorias:".$subcategoria["IdSubCategoria"]."</br>";
+		}	
+	}	
 }
 
+
+
+/* FUNCAO SELECT
+*  RECEBE UMA QUERY STRING
+*  RETORNA UM ARRAY ASSOCIATIVO
+* 
+*  Exemplo: ARRAY["NOME_COLUNA"]
+*/
 function Select($q){
 	$ip = $_GET["ip"];
 	$user = $_GET["user"];
