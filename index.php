@@ -19,6 +19,9 @@ if(is_null($codhost)){
 	exit();
 }
 else{
+	$array_json = Array();
+	$meses_ano = array('', 'Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez');
+	
 	//define quando altera a categoria, criando um header ou grand-header (a definir)
 	$query_categorias = 	"select distinct IdCategoria,NomeCategoria
 							from v_relatorio
@@ -40,9 +43,6 @@ else{
 	
 		debug("<li><h1>Nivel Categoria(" . $categoria["NomeCategoria"] . ")</h1></li>");
 		
-		//echo "Categoria :" . $categoria["IdCategoria"] . "</br>";
-		//echo "query_subcategorias -> $query_subcategorias</br>";
-		
 		$rows = Select($query_subcategorias);
 		
 		/*	para cada categoria pode ter varias outras subcategorias..
@@ -53,7 +53,7 @@ else{
 			debug("<li><h2>Nivel SubCategoria(" . $subcategoria["NomeSubCategoria"] . ")</h2></li>");
 			//echo ".      subcategorias:".$subcategoria["IdSubCategoria"]."</br>";
 			
-			$query_graficos = 	"select distinct IdGrafico,TituloGrafico
+			$query_graficos = 	"select distinct IdGrafico,TituloGrafico, Json
 									from v_relatorio
 									where IdHost = " . $codhost . "
 									and IdCategoria = " . $categoria["IdCategoria"] . "
@@ -78,6 +78,13 @@ else{
 				$rows = Select($query_chaves);
 				$string_auxiliar = null;
 				debug("<ol type=\"1\">");
+				
+				//armazena o json deste grafico
+				//altera o titulo e o subtitulo no json
+				$json = $grafico["Json"];
+				$json = str_replace('$titulo_grafico',$grafico["TituloGrafico"],$json);
+				$json = str_replace('$subtitulo_grafico',$grafico["SubtituloGrafico"],$json);	
+				debug("json1 " . $json);
 				
 				(count($rows)>1) ? debug("<li><h4>Chaves de busca(".count($rows).") :</h4></li>") : debug("<li><h4>Chave de busca:</h4></li>");
 				
@@ -155,53 +162,114 @@ else{
 				
 				/** BUSCA OS VALORES PARA CADA CHAVE
 				**/
+				$series = Array();
+				$total_chaves = count($rows);
+				$contador = 0;
 				foreach ($rows as $oneOfTop5keys){
+					$contador = $contador+1;
 					debug("<li><h4>Chave de retorno (" . $oneOfTop5keys["Chave"] . ")</h4></li>");	
-						debug("<ol type=\"1\">");						
+					debug("<ol type=\"1\">");						
+					
+					$query_valores_por_chave =
+					"select round(min(value_min),2) as minima,
+							round(max(value_max),2) as maxima,
+							round(sum(value_max)/count(*),2) as media,
+							date_format(FROM_UNIXTIME(clock),'%Y-%m') as data,
+							b.key_ as key_
+					from zabbix.trends a,zabbix.items b, zabbix.hosts c
+					where
+					a.itemid = b.itemid
+					and b.hostid = c.hostid
+					and b.hostid = ". $codhost ."
+					and b.key_ = '" . $oneOfTop5keys["Chave"] . "' 
+					and clock >=  UNIX_TIMESTAMP(DATE_FORMAT(date_add(date_add(CURRENT_DATE,interval -DAY(CURRENT_DATE)+1 DAY),interval -3 MONTH), '%Y%m%d%H%i%s')) 
+					and clock <=  UNIX_TIMESTAMP(DATE_FORMAT(date_add(date_add(CURRENT_DATE,interval -DAY(CURRENT_DATE)+1 DAY), interval -1 second), '%Y%m%d%H%i%s')) 
+					group by b.key_,date_format(FROM_UNIXTIME(clock),'%Y-%m')
+					union 
+					select 	round(min(value_min),2) as minima,
+							round(max(value_max),2) as maxima,
+							round(sum(value_max)/count(*),2) as media,
+							date_format(FROM_UNIXTIME(clock),'%Y-%m') as data,
+							b.key_ as key_
+					from zabbix.trends_uint a,zabbix.items b, zabbix.hosts c
+					where
+					a.itemid = b.itemid
+					and b.hostid = c.hostid
+					and b.hostid = ". $codhost ." 
+					and b.key_ = '" . $oneOfTop5keys["Chave"] . "' 
+					and clock >=  UNIX_TIMESTAMP(DATE_FORMAT(date_add(date_add(CURRENT_DATE,interval -DAY(CURRENT_DATE)+1 DAY),interval -3 MONTH), '%Y%m%d%H%i%s')) 
+					and clock <=  UNIX_TIMESTAMP(DATE_FORMAT(date_add(date_add(CURRENT_DATE,interval -DAY(CURRENT_DATE)+1 DAY), interval -1 second), '%Y%m%d%H%i%s')) 
+					group by b.key_,date_format(FROM_UNIXTIME(clock),'%Y-%m') order by key_,data";
+					
+					//datasets, as linhas do grafico
+					$categories = Array();
+					$array_maxima['name'] = 'Maxima';
+					$array_media['name'] = 'Media';
+					$array_minima['name'] = 'Minima';
+					$array_object['name'] = $oneOfTop5keys["tablespace_name"];
+					
+					
+					
+					// Busca os valores na base.
+					$rows = Select($query_valores_por_chave);
+					foreach ($rows as $valor){
+						if($grafico_multiplo){
+							debug("<li><h4>Data (" . $valor["data"] . ")&ensp;//&ensp;Media (" . $valor["media"] . ")</h4></li>");
+							$array_object['data'][] = $valor['media'];
+						}								
+						else{
+							debug("<li><h4>Data (" . $valor["data"] . ")&ensp;//&ensp;Minima (" . $valor["minima"] . ")&ensp;
+							//&ensp;Media (" . $valor["media"] . "&ensp;//&ensp;Maxima (" . $valor["maxima"] . ")</h4></li>");
 						
-						$query_valores_por_chave =
-						"select round(min(value_min),2) as minima,
-								round(max(value_max),2) as maxima,
-								round(sum(value_max)/count(*),2) as media,
-								date_format(FROM_UNIXTIME(clock),'%Y-%m') as data,
-								b.key_ as key_
-						from zabbix.trends a,zabbix.items b, zabbix.hosts c
-						where
-						a.itemid = b.itemid
-						and b.hostid = c.hostid
-						and b.hostid = ". $codhost ."
-						and b.key_ = '" . $oneOfTop5keys["Chave"] . "' 
-						and clock >=  UNIX_TIMESTAMP(DATE_FORMAT(date_add(date_add(CURRENT_DATE,interval -DAY(CURRENT_DATE)+1 DAY),interval -3 MONTH), '%Y%m%d%H%i%s')) 
-						and clock <=  UNIX_TIMESTAMP(DATE_FORMAT(date_add(date_add(CURRENT_DATE,interval -DAY(CURRENT_DATE)+1 DAY), interval -1 second), '%Y%m%d%H%i%s')) 
-						group by b.key_,date_format(FROM_UNIXTIME(clock),'%Y-%m')
-						union 
-						select 	round(min(value_min),2) as minima,
-								round(max(value_max),2) as maxima,
-								round(sum(value_max)/count(*),2) as media,
-								date_format(FROM_UNIXTIME(clock),'%Y-%m') as data,
-								b.key_ as key_
-						from zabbix.trends_uint a,zabbix.items b, zabbix.hosts c
-						where
-						a.itemid = b.itemid
-						and b.hostid = c.hostid
-						and b.hostid = ". $codhost ." 
-						and b.key_ = '" . $oneOfTop5keys["Chave"] . "' 
-						and clock >=  UNIX_TIMESTAMP(DATE_FORMAT(date_add(date_add(CURRENT_DATE,interval -DAY(CURRENT_DATE)+1 DAY),interval -3 MONTH), '%Y%m%d%H%i%s')) 
-						and clock <=  UNIX_TIMESTAMP(DATE_FORMAT(date_add(date_add(CURRENT_DATE,interval -DAY(CURRENT_DATE)+1 DAY), interval -1 second), '%Y%m%d%H%i%s')) 
-						group by b.key_,date_format(FROM_UNIXTIME(clock),'%Y-%m') order by key_,data";
+							//pucha cada mes e coloca no array de categories.
+							$array_maxima['data'][] = $valor['maxima'];
+							$array_media['data'][] = $valor['media'];
+							$array_minima['data'][] = $valor['minima'];							
+						}		
+
+						//converte 2015-03 para Março/2015
+						//independente se o tipo é multiplo ou nao					
+						if(count($categories)<3 || is_null($categories)){
+							$ano = substr($valor['data'],0,4);
+							$mes = $meses_ano[(int)substr($valor['data'],5,2)];
+							$data_ajustada = $mes . '/' . $ano;
+							array_push($categories, $data_ajustada);					
+						}
+					}					
+					
+					if($grafico_multiplo){
+						array_push($series,$array_object);	
+						debug("<h4>series ".json_encode($series, JSON_NUMERIC_CHECK)."</h4>");
+						unset($array_object);
+					}else{
+						//adiciona os array de maxima, media, minima ao array de series;
+						array_push($series,$array_maxima);
+						array_push($series,$array_media);
+						array_push($series,$array_minima);
+					}	
 						
-						$rows = Select($query_valores_por_chave);
-						foreach ($rows as $valor){
-							if($grafico_multiplo){
-								debug("<li><h4>Data (" . $valor["data"] . ")&ensp;//&ensp;Media (" . $valor["maxima"] . ")</h4></li>");
-							}								
-							else{
-								debug("<li><h4>Data (" . $valor["data"] . ")&ensp;//&ensp;Minima (" . $valor["minima"] . ")&ensp;
-							//&ensp;Media (" . $valor["media"] . "&ensp;//&ensp;Maxima (" . $valor["maxima"] . ")</h4></li>");	
-							}				
-						}						
+					
+					if($contador == $total_chaves){
+						//adiciona as categorias no json
+						$json = str_replace('$categorias',json_encode($categories, JSON_NUMERIC_CHECK),$json);
+						
+						//adiciona as series no json
+						$json = str_replace('$series',json_encode($series, JSON_NUMERIC_CHECK),$json);
+						debug("<h4>json c/ series </br>$json</h4>");
+						
+						//limpa variaveis para proxima loop;			
+						unset($array_maxima);
+						unset($array_media);
+						unset($array_minima);
+						unset($series);
+					}	
+					
+						
+					
 					debug("</ol>");
 				}
+						
+				
 				debug("</ol>");	
 				debug("<li><h4>Query top 5 objetos ( " . $query_top5_keys . " )</h4></li>");
 				debug("</ol>");
@@ -211,6 +279,32 @@ else{
 		debug("</ol>");			
 	}
 	debug("</ol>");	
+}
+
+
+function buscaEventos($chave){
+	/*
+	** Eventos disparados no periodo de 1 mes pela chave
+	**/			
+	$cod = 10227;
+	
+	$query_eventos = "select count(*) quantidade
+					from zabbix.items i
+					left join zabbix.hosts h on i.hostid = h.hostid
+					left join zabbix.functions f on i.itemid = f.itemid
+					left join zabbix.triggers t on f.triggerid = t.triggerid
+					left join zabbix.events e on  f.triggerid = e.objectid 
+					where h.hostid = ". $cod ." 
+					and i.key_ like '" . $chave . "' 
+					and clock >=  UNIX_TIMESTAMP(DATE_FORMAT(date_add(date_add(CURRENT_DATE,interval -DAY(CURRENT_DATE)+1 DAY),interval -1 MONTH), '%Y%m%d%H%i%s')) 
+					and clock <=  UNIX_TIMESTAMP(DATE_FORMAT(date_add(date_add(CURRENT_DATE,interval -DAY(CURRENT_DATE)+1 DAY), interval -1 second), '%Y%m%d%H%i%s'))
+					and t.status = 0
+					and i.status = 0";
+			
+	$rows = Select($query_eventos);
+	foreach ($rows as $evento){
+		return $evento["quantidade"];
+	}
 }
 
 /* FUNCAO DEBUG
