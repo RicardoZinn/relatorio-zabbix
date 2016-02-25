@@ -33,7 +33,7 @@ if(is_null($codhost)){
 else{
 	setDefault();
 	inicio();
-	printHeader($host->nome);
+	printHeader('RESUMO DE PERFORMANCE DO SERVIDOR - ' . strtoupper($host->nome));
 	
 	$total_categorias = count($host->categoria);
 	$total_subcategoria = count($host->subcategoria);
@@ -57,7 +57,8 @@ else{
 		
 		if($cria_header_categoria){
 			debugl("[CRIAR HEADER]". $host->categoria[$x]);
-			echo "[CRIAR HEADER]". $host->categoria[$x] . "</br>";
+			printCategoriaHeader('(CATEGORIA) - ' . strtoupper($host->categoria[$x]));
+			//echo "[CRIAR HEADER]". $host->categoria[$x] . "</br>";
 			$old_categoria = $host->categoria[$x];
 			$cria_header_categoria = false;
 		}
@@ -72,7 +73,8 @@ else{
 		
 		if($cria_header_subcategoria){
 			debugl("[CRIAR SUBHEADER]". $host->subcategoria[$x]);
-			echo "[CRIAR SUBHEADER]". $host->subcategoria[$x];
+			//echo "[CRIAR SUBHEADER]". $host->subcategoria[$x];
+			printSubCategoriaHeader('(SUBCATEGORIA) - ' . strtoupper($host->subcategoria[$x]));
 			$old_subcategoria = $host->subcategoria[$x];
 			$cria_header_subcategoria = false;
 		}
