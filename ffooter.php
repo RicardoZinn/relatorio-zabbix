@@ -1,8 +1,13 @@
 <?php 
+/**
+ * printFooter
+ *
+ * Insere o rodape da pagina com o nome da empresa e o nome do responsavel.
+ *
+ * @param (type) (empresa_nome) nome da empresa.
+ * @param (type) (responsavel_nome) nome do responsavel principal na empresa.
+ */
 function printFooter($empresa_nome,$responsavel_nome){
-	/**
-	** Parte final do HTML contendo nome da empresa, responsavel pelo e-mail principal e dados da NVL
-	**/
 	$html  .= '			<!--CARD-final-->';
 	$html  .= '			<table id="card_final" style="font-family:Helvetica,Arial,sans-serif" border="0" cellpadding="0" cellspacing="0" width="900">';
 	$html  .= '             <tbody>';

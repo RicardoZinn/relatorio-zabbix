@@ -1,9 +1,14 @@
 <?php 
+/**
+ * printBody
+ *
+ * Insere html com a imagem que retorna da API do HighChart, insere tambem quando tiver a quantidade de eventos nas chaves contidas no grafico.
+ *
+ * @param (type) (identificador) identificador da imagem.
+ * @param (type) (string_json) string com os dados para plotar o grafico.
+ * @param (type) (qtd_eventos) quantidade de eventos no ultimo mes para as chaves do grafico.
+ */
 function printBody($identificador,$string_json,$qtd_eventos){
-	/*********************
-	** Monta os gráficos em card, coloca comentario sobre os eventos conforme logica
-	**********************/
-	
 	$url = 'http://export.highcharts.com/?content=options&options=' . $string_json . '&type=image/png&width=800&scale=&constr=Chart';
 	$url_encoded = 'http://export.highcharts.com/?content=options&options='. utf8_decode(urlencode($string_json)) .'&type=image/png&width=800&scale=&constr=Chart';
 	

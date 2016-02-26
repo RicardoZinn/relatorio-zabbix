@@ -1,4 +1,24 @@
 <?php 
+
+/**
+ * printTrackingIMG
+ *
+ * Insere uma imagem 1px x 1px que quando acessada passa os mesmos parametros para a pagina tracking.php
+ *
+ * @param (type) (id) identificador unico do email.
+ * @param (type) (codhost) identificador do codigo do host.
+ */
+function printTrackingIMG($id,$codhost){
+	echo "<img src=\"http://192.168.2.183/painel/doriclaudino/tracking.php?id=$id&codhost=$codhost\" alt=\"\" width=\"1\" height=\"1\" border=\"0\" />";
+}
+
+/**
+ * printSubCategoriaHeader
+ *
+ * Insere o começo do html e o header principal com o nome do host
+ *
+ * @param (type) (header_string) texto exibido no header principal.
+ */
 function printSubCategoriaHeader($header_string){
 	$html = "";	
 	$html  .= '<html id="html"><head><meta http-equiv="Content-Type" content="text/html;charset=utf-8">';
@@ -30,30 +50,6 @@ function printSubCategoriaHeader($header_string){
 	$html  .= '             <tbody>';
 	$html  .= '              <tr>';
 	$html  .= '               <td style="font-family:Helvetica,Arial,sans-serif">';
-	/*
-	$html  .= '                <table border="0" cellpadding="1" cellspacing="0" width="1">';
-	$html  .= '                 <tbody>';
-	$html  .= '                  <tr>';
-	$html  .= '                   <td>';
-	$html  .= '                    <div style="min-height:8px;font-size:8px;line-height:8px">';
-	$html  .= '                     &nbsp;';
-	$html  .= '                    </div></td>';
-	$html  .= '                  </tr>';
-	$html  .= '                 </tbody>';
-	$html  .= '                </table>';
-	*/
-	/*
-	$html  .= '                <table border="0" cellpadding="1" cellspacing="0" width="1">';
-	$html  .= '                 <tbody>';
-	$html  .= '                  <tr>';
-	$html  .= '                   <td>';
-	$html  .= '                    <div style="min-height:8px;font-size:8px;line-height:8px">';
-	$html  .= '                     &nbsp;';
-	$html  .= '                    </div></td>';
-	$html  .= '                  </tr>';
-	$html  .= '                 </tbody>';
-	$html  .= '                </table>';
-	*/
 	
 	$html  .= '                <table style="font-family:Helvetica,Arial,sans-serif" bgcolor="#333333" border="0" cellpadding="0" cellspacing="0" width="100%">';
 	$html  .= '                 <tbody>';
@@ -128,6 +124,13 @@ function printSubCategoriaHeader($header_string){
 }
 
 
+/**
+ * printCategoriaHeader
+ *
+ * Insere o header de categoria com o nome da categoria
+ *
+ * @param (type) (header_string) texto exibido no header de categoria.
+ */
 function printCategoriaHeader($header_string){
 	$html = "";	
 	$html  .= '<html id="html"><head><meta http-equiv="Content-Type" content="text/html;charset=utf-8">';
@@ -257,6 +260,13 @@ function printCategoriaHeader($header_string){
 }
 
 
+/**
+ * printHeader
+ *
+ * Insere o header de subcategoria com o nome da subcategoria, logo acima do grafico
+ *
+ * @param (type) (header_string) texto exibido no header de subcategoria.
+ */
 function printHeader($header_string){
 	$html = "";	
 	$html  .= '<html id="html"><head><meta http-equiv="Content-Type" content="text/html;charset=utf-8">';
