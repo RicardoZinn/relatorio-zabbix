@@ -8,8 +8,10 @@
  * @param (type) (id) identificador unico do email.
  * @param (type) (codhost) identificador do codigo do host.
  */
-function printTrackingIMG($id,$codhost){
-	echo "<img src=\"http://192.168.2.183/painel/doriclaudino/tracking.php?id=$id&codhost=$codhost\" alt=\"\" width=\"1\" height=\"1\" border=\"0\" />";
+function printTrackingIMG($id,$codhost,$trackingRelat){
+	if(strcmp($trackingRelat,"true") == 0){
+		echo "<img src=\"http://192.168.2.183/painel/doriclaudino/tracking.php?id=$id&codhost=$codhost\" alt=\"\" width=\"1\" height=\"1\" border=\"0\" />";
+	}
 }
 
 /**
@@ -21,9 +23,6 @@ function printTrackingIMG($id,$codhost){
  */
 function printSubCategoriaHeader($header_string){
 	$html = "";	
-	$html  .= '<html id="html"><head><meta http-equiv="Content-Type" content="text/html;charset=utf-8">';
-	$html  .= '</head>';
-	$html  .= '<body>';
 	$html  .= '    <span style="display:none!important;font-size:1px;color:transparent;min-height:0;width:0"></span>';
 	$html  .= '    <table style="font-family:Helvetica,Arial,sans-serif;border-collapse:collapse;width:100%!important;font-family:Helvetica,Arial,sans-serif;margin:0;padding:0" bgcolor="#DFDFDF" border="0" cellpadding="0" cellspacing="0" width="100%">';
 	$html  .= '     <tbody>';
@@ -133,8 +132,6 @@ function printSubCategoriaHeader($header_string){
  */
 function printCategoriaHeader($header_string){
 	$html = "";	
-	$html  .= '<html id="html"><head><meta http-equiv="Content-Type" content="text/html;charset=utf-8">';
-	$html  .= '</head>';
 	$html  .= '<body>';
 	$html  .= '    <span style="display:none!important;font-size:1px;color:transparent;min-height:0;width:0"></span>';
 	$html  .= '    <table style="font-family:Helvetica,Arial,sans-serif;border-collapse:collapse;width:100%!important;font-family:Helvetica,Arial,sans-serif;margin:0;padding:0" bgcolor="#DFDFDF" border="0" cellpadding="0" cellspacing="0" width="100%">';
