@@ -1,6 +1,6 @@
 <?php 
 /**
- * printBody
+ * getBodyHTML
  *
  * Insere html com a imagem que retorna da API do HighChart, insere tambem quando tiver a quantidade de eventos nas chaves contidas no grafico.
  *
@@ -8,11 +8,20 @@
  * @param (type) (string_json) string com os dados para plotar o grafico.
  * @param (type) (qtd_eventos) quantidade de eventos no ultimo mes para as chaves do grafico.
  */
-function printBody($identificador,$string_json,$qtd_eventos){
+function getBodyHTML($identificador,$string_json,$qtd_eventos){
 	
+	//agora passamos direto a url do servidor atual;
+	$url_encoded = $string_json;
+	
+	
+	/**
+	* URL do webservice do highchart
+	*
 	$url = 'http://export.highcharts.com/?content=options&options=' . $string_json . '&type=image/png&width=800&scale=&constr=Chart';
 	$url_encoded = 'http://export.highcharts.com/?content=options&options='. utf8_decode(urlencode($string_json)) .'&type=image/png&width=800&scale=&constr=Chart';
-		
+	**/
+	
+	$html   = '';
 	$html  .= '			<!--CARD-xx-->';
 	$html  .= '			<table id="dori_card_com_grafico" class="card" style="font-family:Helvetica,Arial,sans-serif;width:900px;table-layout:fixed;text-align:left;background:#ffffff;border:1px solid #ffffff;border-bottom:2px solid #bcbcbc;border-left:1px solid #cecece;border-right:1px solid #cecece" border="0" cellpadding="0" cellspacing="0" width="900">';
 	$html  .= '             <tbody>';
@@ -65,7 +74,7 @@ function printBody($identificador,$string_json,$qtd_eventos){
 	$html  .= '                      <tr>';
 	$html  .= '                       <td style="font-size:18px;line-height:22px">';
 	$html  .= '                          <div class="container_imagem" style="vertical-align:middle; text-align:center">';
-	$html  .= '                            <img id="grafico_png_'.$identificador.'" alt="' . $url_encoded . '" src="' . $url_encoded . '"></img>';
+	$html  .= '                            <img id="grafico_png_'.$identificador.'" src="' . $url_encoded . '"></img>';
 	$html  .= '                          </div>';
 	$html  .= '						  ';
 	$html  .= '					   </td>';
@@ -271,6 +280,6 @@ function printBody($identificador,$string_json,$qtd_eventos){
 	$html  .= '             </tbody>';
 	$html  .= '            </table>';		
 		
-	echo $html;
+	return $html;
 }
 ?>
