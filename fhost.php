@@ -981,5 +981,23 @@ function Update($query){
     }
 }
 
+function setDataEnvio($mailid){
+	$query = "UPDATE historico set data_envio = CURRENT_TIMESTAMP
+				where id = $mailid ";	
+	return Update($query);
+}
+
+
+function getObjectsToSend(){
+	$query = "select id,
+					phpbase64 
+					from historico 
+					where data_geracao is not null
+					and data_revisao is not null
+					and data_envio is null ";	
+	$rows = Select($query);
+	return $rows;
+}
+
 
 ?>
