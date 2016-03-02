@@ -1,13 +1,14 @@
 <?php 
 /**
- * printFooter
+ * getFooterHTML
  *
  * Insere o rodape da pagina com o nome da empresa e o nome do responsavel.
  *
  * @param (type) (empresa_nome) nome da empresa.
  * @param (type) (responsavel_nome) nome do responsavel principal na empresa.
  */
-function printFooter($empresa_nome,$responsavel_nome){
+function getFooterHTML($empresa_nome,$responsavel_nome){
+	$html   = '';
 	$html  .= '			<!--CARD-final-->';
 	$html  .= '			<table id="card_final" style="font-family:Helvetica,Arial,sans-serif" border="0" cellpadding="0" cellspacing="0" width="900">';
 	$html  .= '             <tbody>';
@@ -105,6 +106,6 @@ function printFooter($empresa_nome,$responsavel_nome){
 	$html  .= '    <img class="CToWUd" src="" style="width:1px;min-height:1px"><div class="yj6qo"></div><div class="adL">';
 	$html  .= '   </div>';
 	$html  .= '</body></html>';
-	echo $html;
+	return $html;
 }
 ?>
