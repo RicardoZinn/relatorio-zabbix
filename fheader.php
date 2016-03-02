@@ -1,29 +1,27 @@
 <?php 
 
 /**
- * printTrackingIMG
+ * getTrackingHTML
  *
  * Insere uma imagem 1px x 1px que quando acessada passa os mesmos parametros para a pagina tracking.php
  *
  * @param (type) (id) identificador unico do email.
  * @param (type) (codhost) identificador do codigo do host.
  */
-function printTrackingIMG($id,$codhost){
-	echo "<img src=\"http://192.168.2.183/painel/doriclaudino/tracking.php?id=$id&codhost=$codhost\" alt=\"\" width=\"1\" height=\"1\" border=\"0\" />";
+function getTrackingHTML($id,$tracking){
+	if(strcmp($tracking,"true") == 0)
+		return "<img src=\"http://helpdesk.nvl.inf.br/painel/report/tracking.php?id=$id\" alt=\"\" width=\"1\" height=\"1\" border=\"0\" />";
 }
 
 /**
- * printSubCategoriaHeader
+ * getSubCategoriaHeaderHTML
  *
  * Insere o começo do html e o header principal com o nome do host
  *
  * @param (type) (header_string) texto exibido no header principal.
  */
-function printSubCategoriaHeader($header_string){
+function getSubCategoriaHeaderHTML($header_string){
 	$html = "";	
-	$html  .= '<html id="html"><head><meta http-equiv="Content-Type" content="text/html;charset=utf-8">';
-	$html  .= '</head>';
-	$html  .= '<body>';
 	$html  .= '    <span style="display:none!important;font-size:1px;color:transparent;min-height:0;width:0"></span>';
 	$html  .= '    <table style="font-family:Helvetica,Arial,sans-serif;border-collapse:collapse;width:100%!important;font-family:Helvetica,Arial,sans-serif;margin:0;padding:0" bgcolor="#DFDFDF" border="0" cellpadding="0" cellspacing="0" width="100%">';
 	$html  .= '     <tbody>';
@@ -120,21 +118,19 @@ function printSubCategoriaHeader($header_string){
 	$html  .= '              </tr>';
 	$html  .= '             </tbody>';
 	$html  .= '            </table>';
-	echo $html;
+	return $html;
 }
 
 
 /**
- * printCategoriaHeader
+ * getCategoriaHeaderHTML
  *
  * Insere o header de categoria com o nome da categoria
  *
  * @param (type) (header_string) texto exibido no header de categoria.
  */
-function printCategoriaHeader($header_string){
+function getCategoriaHeaderHTML($header_string){
 	$html = "";	
-	$html  .= '<html id="html"><head><meta http-equiv="Content-Type" content="text/html;charset=utf-8">';
-	$html  .= '</head>';
 	$html  .= '<body>';
 	$html  .= '    <span style="display:none!important;font-size:1px;color:transparent;min-height:0;width:0"></span>';
 	$html  .= '    <table style="font-family:Helvetica,Arial,sans-serif;border-collapse:collapse;width:100%!important;font-family:Helvetica,Arial,sans-serif;margin:0;padding:0" bgcolor="#DFDFDF" border="0" cellpadding="0" cellspacing="0" width="100%">';
@@ -256,18 +252,18 @@ function printCategoriaHeader($header_string){
 	$html  .= '              </tr>';
 	$html  .= '             </tbody>';
 	$html  .= '            </table>';
-	echo $html;
+	return $html;
 }
 
 
 /**
- * printHeader
+ * getHeaderHTML
  *
  * Insere o header de subcategoria com o nome da subcategoria, logo acima do grafico
  *
  * @param (type) (header_string) texto exibido no header de subcategoria.
  */
-function printHeader($header_string){
+function getHeaderHTML($header_string){
 	$html = "";	
 	$html  .= '<html id="html"><head><meta http-equiv="Content-Type" content="text/html;charset=utf-8">';
 	$html  .= '</head>';
@@ -312,7 +308,7 @@ function printHeader($header_string){
 	$html  .= '                <table style="font-family:Helvetica,Arial,sans-serif" bgcolor="#DDDDDD" border="0" cellpadding="0" cellspacing="0" width="100%">';
 	$html  .= '                 <tbody>';
 	$html  .= '                  <tr>';
-	$html  .= '                   <td height="21" valign="middle" width="95" align="left"><a style="text-decoration:none;border:none;display:block;min-height:21px;width:100%" href="" target="_blank"><img class="CToWUd" src="" alt="NVL IT LOGO" style="border:none;text-decoration:none" height="21" width="95"></a></td>';
+	$html  .= '                   <td height="21" valign="middle" width="95" align="left"><img class="CToWUd" src="logomarca/logo_zabbix.png" alt="NVL IT LOGO" style="border:none;text-decoration:none" height="21" width="95"></td>';
 	$html  .= '                   <td width="15">';
 	$html  .= '                    <table border="0" cellpadding="1" cellspacing="0" width="15">';
 	$html  .= '                     <tbody>';
@@ -409,6 +405,6 @@ function printHeader($header_string){
 	$html  .= '              </tr>';
 	$html  .= '             </tbody>';
 	$html  .= '            </table>';
-	echo $html;
+	return $html;
 }
 ?>
