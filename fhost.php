@@ -170,8 +170,7 @@ function createHost($codhost){
                  * Altera o json com o nome do titulo e subtitulo do grafico
                  */                
                 $json = $grafico["json"];
-                $json = str_replace('$titulo_grafico',$grafico["titulo"],$json);
-                $json = str_replace('$subtitulo_grafico',$grafico["subtitulo"],$json);
+                
                 
                 
                 
@@ -202,39 +201,40 @@ function createHost($codhost){
                 /**
                  * Processa cada chave encontrada
                  */
+				 $alterou_titulo = false;
                 foreach ($ArrayCincoMaioresChaves as $chaveMaior){
                     debugl("[ChaveRetorno]" . $chaveMaior["Chave"]);
-                    
-                    
-                    /**
-                     * Busca o nome do objeto, no padrao [string string objeto]
-                     */
-                    $Objeto = buscaRegexObjetoGOMES($chaveMaior["Chave"]);
-                    /*
-                    $SubCategoria = buscaRegexSubCategoria($chaveMaior["Chave"]);
-                    debugl("++++++" . $SubCategoria);
-                    debugl("++++++" . $Objeto);
-                    */
-                    
-                    
+                	//retorna a legenda da primeira chave que encontrar baseada em uma das chaves com maior valor
+					//echo "Teste de legenda...para " . $chaveMaior["Chave"];
+					
+					$legenda = null;
+					$legendaChave = null;
+					$legenda = buscaLegendaChaveCadastrada($ArrayChavesCadastradas,$chaveMaior["Chave"]);
+					$legendaChave = buscaRegexObjetoNovoRegex2($chaveMaior["Chave"],$legenda);
+					if(is_null($legendaChave))
+						$legendaChave = $chaveMaior["Chave"];
+					
+					if($alterou_titulo === false){
+						$titulo_grafico = $grafico["titulo"];
+						$subtitulo_grafico = $grafico["subtitulo"];
+						$titulo_grafico = buscaRegexObjetoNovoRegex2($chaveMaior["Chave"],$grafico["titulo"]);
+						$subtitulo_grafico = buscaRegexObjetoNovoRegex2($chaveMaior["Chave"],$grafico["subtitulo"]);
+						$json = str_replace('$titulo_grafico',$titulo_grafico,$json);
+						$json = str_replace('$subtitulo_grafico',$subtitulo_grafico,$json);
+						$alterou_titulo = true;
+					}
+					
                     /**
                      * Para cada chave busca seus valores, medias e datas por mes.
                      */
                     $ArrayValoresChave = buscaValoresPorChave($codhost,$chaveMaior["Chave"],$host->numMaxPeriodAnalise);    
 
                     /**
-                     * Ponto onde decide se a legenda sera min,med,max ou o nome de cada objeto plotado
+                     * Ponto onde decide se a legenda sera min,med,max ou o nome de cada legendaChave plotado
                      */
                     if($total>1){
                         debugl("[TipoPlotagem]"."print apenas as medias");
-						if(is_null($Objeto)){
-							$Objeto = buscaRegexObjetoZabbix($chaveMaior["Chave"]);
-								if(is_null($Objeto))
-									$Objeto = $chaveMaior["Chave"];
-							array_push($series,processaValoresMultiplos($Objeto,$ArrayValoresChave));
-						}
-						else
-							array_push($series,processaValoresMultiplos($Objeto,$ArrayValoresChave));
+							array_push($series,processaValoresMultiplos($legendaChave,$ArrayValoresChave));
 						/**
 						* apresentar novo nome para o objeto
 						**/
@@ -345,9 +345,11 @@ function createLocalImage($url){
 	$path      = "images/";
 	$url_path  = "http://helpdesk.nvl.inf.br/painel/report/" . $path;
 	
+	exec("php createImageFromUrl.php \"$url\" $unique > /dev/null 2>/dev/null &");
+	/*
 	$img = @imagecreatefrompng($url);
 	imagepng($img, $path . $filename);
-	
+	*/
 	return $url_path . $filename;
 }
 
@@ -617,6 +619,76 @@ function processaValoresMultiplos($Objeto,$ArrayValoresChave){
     return $array_object;
 }
 
+function buscaLegendaChaveCadastrada($arrayCadastrada,$chaveZabbix){
+	foreach($arrayCadastrada as $chaveCadastrada){
+		$tmppattern  = '';
+		//altera os caracteres especiais para . (ponto)
+		$tmppattern = preg_replace("/([\.\[\]])/i", ".", $chaveCadastrada["valor"]);
+		//altera o caractere % para .* (qualquer string e inumeras vezes)
+		$tmppattern = preg_replace("/(\%)/i", ".*", $tmppattern);
+		$tmppattern = "/" . $tmppattern . "/i";
+		//se a string contem o regex montado entao retorna a legenda
+		if(preg_match($tmppattern,$chaveZabbix, $matches_out)){
+			return $chaveCadastrada["legenda_chave"];
+		}
+	}
+	return null;
+}
+
+
+
+function buscaRegexObjetoNovoRegex2($input_str,$string_replace){
+	if(is_null($string_replace))
+		return $input_str;
+	
+	$pattern = '/([^\w\/]+)/i';
+	preg_match_all($pattern, $input_str, $matches_out);
+	
+	$pattern = '/';
+	for($i=0; $i<count($matches_out[0]); $i++){
+		$pattern .= '([\w\/]+)[^\w\/]+';
+    }
+	$pattern .= '/i';
+	
+	if (preg_match($pattern, $input_str, $matches_out))
+		return preg_replace($pattern, $string_replace, $input_str);
+
+	return $string_replace;
+}
+
+
+/**
+* $string_default = system.cpu.load[all,avg5]
+* $string_replace = Objeto - $3
+* $regex_pattern = /(.*)(\,)(.*)(\])/i
+* $resultado = Objeto - avg5
+**/
+function buscaRegexObjetoNovoRegex($input_str,$string_replace){
+	if(is_null($string_replace))
+		return $input_str;
+	
+	$pattern = '/.*\[(\w*)[ ,](\w*)[ ,](\w*)[ ,](\w*)[ ,](\w*)\]/i';
+	if (preg_match($pattern, $input_str, $matches_out))
+		return preg_replace($pattern, $string_replace, $input_str);
+	
+	$pattern = '/.*\[(\w*)[ ,](\w*)[ ,](\w*)[ ,](\w*)\]/i';
+	if (preg_match($pattern, $input_str, $matches_out))
+		return preg_replace($pattern, $string_replace, $input_str);
+	
+	$pattern = '/.*\[(\w*)[ ,](\w*)[ ,](\w*)\]/i';
+	if (preg_match($pattern, $input_str, $matches_out))
+		return preg_replace($pattern, $string_replace, $input_str);
+	
+	$pattern = '/.*\[(\w*)[ ,](\w*)\]/i';
+	if (preg_match($pattern, $input_str, $matches_out))
+		return preg_replace($pattern, $string_replace, $input_str);
+	
+	$pattern = '/.*\[(\w*)\]/i';
+	if (preg_match($pattern, $input_str, $matches_out))
+		return preg_replace($pattern, $string_replace, $input_str);
+
+	return $string_replace;
+}
 
 /**
  * buscaRegexObjetoGOMES
@@ -791,6 +863,7 @@ function buscaCincoMaioresChaves($codhost, $nome_instancia, $rows,$seriesAnalisa
  * @return (type) (string_auxiliar) string para concatenar na query e filtrar as chaves.
  */
 function montaQueryAuxiliar($rows){
+	$string_auxiliar = null;
     foreach ($rows as $chave){                            
         //Se essa chave possui objeto dinamico
         if(strpos($chave["valor"], '%')){
@@ -827,10 +900,13 @@ function montaQueryAuxiliar($rows){
  * @return (type) (rows) array com chaves cadastradas.
  */
 function buscaChavesCadastradas($codhost, $grafico_id){
-    $query_chaves =     "select distinct valor
+    $query_chaves =     "select distinct 	chave_id,
+											valor,
+											legenda_chave
                         from view_grafico_host
                         where host_id = $codhost 
-                        and grafico_id = $grafico_id";
+                        and grafico_id = $grafico_id
+						order by chave_id";
     $rows = Select($query_chaves);
     return $rows;
 }
@@ -845,7 +921,7 @@ function buscaChavesCadastradas($codhost, $grafico_id){
  * @return (type) (rows) array de graficos, titulos, subtitulos.
  */
 function buscaGraficos($codhost, $categoria_id){
-    $query_graficos =     "select distinct     grafico_id,
+    $query_graficos =     "select distinct  grafico_id,
                                             titulo, 
                                             subtitulo,
                                             json
@@ -959,7 +1035,7 @@ function Select($query){
 
 
 /**
- * Select
+ * Update
  *
  * Processa query retornando um array associativo.
  *
