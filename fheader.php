@@ -308,14 +308,14 @@ function getHeaderHTML($header_string){
 	$html  .= '                <table style="font-family:Helvetica,Arial,sans-serif" bgcolor="#DDDDDD" border="0" cellpadding="0" cellspacing="0" width="100%">';
 	$html  .= '                 <tbody>';
 	$html  .= '                  <tr>';
-	$html  .= '                   <td height="21" valign="middle" width="95" align="left"><img class="CToWUd" src="logomarca/logo_zabbix.png" alt="NVL IT LOGO" style="border:none;text-decoration:none" height="21" width="95"></td>';
+	$html  .= '                   <td style="min-height:15px;min-width:95px;" valign="middle" align="left"><img class="CToWUd" src="http://helpdesk.nvl.inf.br/painel/report/logomarca/logo_transparent_400x.png" alt="NVL IT LOGO" style="border:none;text-decoration:none;min-height:15px;min-width:95px;"></td>';
 	$html  .= '                   <td width="15">';
 	$html  .= '                    <table border="0" cellpadding="1" cellspacing="0" width="15">';
 	$html  .= '                     <tbody>';
 	$html  .= '                      <tr>';
 	$html  .= '                       <td>';
 	$html  .= '                        <div style="min-height:0px;font-size:0px;line-height:0px">';
-	$html  .= '                         &nbsp;';
+	$html  .= '                         ';
 	$html  .= '                        </div></td>';
 	$html  .= '                      </tr>';
 	$html  .= '                     </tbody>';

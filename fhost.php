@@ -11,7 +11,7 @@ header('Access-Control-Allow-Methods: POST, GET, OPTIONS');
 header('Access-Control-Allow-Headers: Origin, X-Requested-With, Content-Type, Accept');
 
 //configuracoes do banco de dados
-include "database_config.php";
+//include "database_config.php";
 include "fheader.php";
 include "fbody.php";
 include "ffooter.php";
