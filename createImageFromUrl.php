@@ -1,5 +1,5 @@
-<?php
-$nome_fonte = $argv[0];
+<?php						#inicio
+$nome_fonte = $argv[0];				
 $url = $argv[1];
 $unique = $argv[2];
 
@@ -16,4 +16,4 @@ function createLocalImage($url,$unique){
 }
 
 
-?>
+?>						#fim
